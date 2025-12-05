@@ -43,7 +43,7 @@ function sanitizeLogIn(req: Request, res: Response, next: NextFunction) {
 
 async function findAllByTipoUsuario(req:Request, res:Response) {
   try{
-    const token = req.cookies.access_token
+    const token = req.cookies.accessToken
     /*if(!token) {
       throw new UsuarioUnauthorizedError
     }*/
@@ -60,7 +60,7 @@ async function findAllByTipoUsuario(req:Request, res:Response) {
 
 async function findOne(req:Request,res:Response) {
   try{
-    const token = req.cookies.access_token
+    const token = req.cookies.accessToken
     /*if(!token) {
       throw new UsuarioUnauthorizedError
     }*/
@@ -94,33 +94,59 @@ async function logInUsuario(req: Request, res: Response) {
   try { 
     const emailYContraseniaValidos = validarUsuarioLogIn(req.body.sanitizedLogIn)
     const usuario = await em.findOneOrFail(Usuario, {email: emailYContraseniaValidos.email}, {failHandler: () => {throw new UsuarioNotFoundError('El mail ingresado no se encuentra registrado')}})
+    
     const esUsuarioValido = await bcrypt.compare( emailYContraseniaValidos.contrasenia, usuario.contrasenia )
+    
     if(!esUsuarioValido) {
       throw new UsuarioBadRequestError('La contraseña ingresada es incorrecta')
     }
+    
     const usuarioPublico = usuario.asPublicUser()
     const token = jwt.sign({id: usuarioPublico.id, email: usuarioPublico.email}, SECRET_JWT_KEY, {
       expiresIn: '3h'
     })
+
+    // --- LÓGICA DE PRODUCCIÓN VS DESARROLLO ---
+    // Detectamos si estamos en Producción (Render setea NODE_ENV a 'production' por defecto)
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('accessToken', token, {
-      httpOnly: true,
-      //secure: true,
-      //sameSite: 'lax',
-      maxAge: 3000 * 60 * 60 // Pasaje de milisegundos a segundos * Pasaje de segundos a minutos * Pasaje de minutos a horas
-    }).status(200).json({message: 'Sesión iniciada con éxito', data: usuarioPublico})
-    console.log(req.cookies.accessToken)
+      httpOnly: true, // Siempre true por seguridad (JS no puede leerla)
+      
+      // En Prod (Render) debe ser true porque usas HTTPS. 
+      // En Local (localhost) debe ser false porque usas HTTP.
+      secure: isProduction, 
+
+      // En Prod (Netlify -> Render) son dominios distintos, NECESITAS 'none'.
+      // En Local (localhost -> localhost) 'lax' funciona mejor y da menos problemas.
+      sameSite: isProduction ? 'none' : 'lax',
+      
+      // OJO: Tenías "3000 * ..." que son 3 segundos. Corregido a 1 hora x 3
+      maxAge: 1000 * 60 * 60 * 3 
+    })
+    .status(200).json({message: 'Sesión iniciada con éxito', data: usuarioPublico})
+    
   } catch(error: any) {
     handleErrors(error, res)
   }
 }
 
+// ... resto del archivo ...
+
 function logOutUsuario(req: Request, res: Response) {
-  res.clearCookie('accessToken').status(200).json({message: 'Sesión cerrada con éxito'})
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  })
+  .status(200).json({message: 'Sesión cerrada con éxito'})
 }
 
 async function updateUsuario (req:Request,res:Response){
   try {
-    const token = req.cookies.access_token
+    const token = req.cookies.accessToken
     /*if(!token) {
       throw new UsuarioUnauthorizedError
     }*/
@@ -145,7 +171,7 @@ async function updateUsuario (req:Request,res:Response){
 
 async function remove (req:Request,res:Response) {
   try {
-    const token = req.cookies.access_token
+    const token = req.cookies.accessToken
     /*if(!token) {
       throw new UsuarioUnauthorizedError
     }*/
@@ -154,7 +180,7 @@ async function remove (req:Request,res:Response) {
     await em.removeAndFlush(cliente)
     res.status(200).json({message: 'El cliente ha sido eliminado con éxito', data: cliente})
   } catch(error: any) {
-    if(error.name = 'UniqueConstraintViolationException') {
+    if(error.name === 'UniqueConstraintViolationException') {
       error = new ClienteAlreadyHasPedido
     }
     handleErrors(error, res)

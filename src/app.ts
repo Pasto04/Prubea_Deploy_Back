@@ -31,6 +31,7 @@ import { bebidaDeProveedorRouter } from './bebida/bebidaDeProveedor/bebidaDeProv
 // Render nos dará el puerto en process.env.PORT automáticamente
 const port = process.env.PORT || 3000 
 const app = express()
+app.set('trust proxy', 1)
 
 // 2. Middlewares Básicos
 app.use(express.json())
