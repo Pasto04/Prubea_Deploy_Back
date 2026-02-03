@@ -37,7 +37,7 @@ function sanitizePlato(req: Request, res: Response, next: NextFunction) {
 function sanitizeQuery(req: Request) {
   const queryResult: any = {
     descripcion: req.query.descripcionParcial,
-    tipoPlato: req.query.tipoPlato, //Asumo que me ingresan el id del tipo de plato.
+    tipoPlato: req.query.tipoPlato,
     aptoCeliacos: req.query.aptoCeliacos,
     aptoVegetarianos: req.query.aptoVegetarianos,
     aptoVeganos: req.query.aptoVeganos,
@@ -60,7 +60,6 @@ async function findAll(req: Request, res: Response) {
   try {
     console.log(req.cookies)
     const sanitizedQuery = sanitizeQuery(req)
-    //Manejo dentro del propio método la posibilidad de que me envíen por queryString el tipo de plato (para evitar errores)
     if (sanitizedQuery.tipoPlato) {
       sanitizedQuery.tipoPlato = await em.findOneOrFail(TipoPlato, { numPlato: Number.parseInt(req.query.tipoPlato as string) }, 
       { failHandler: () => {throw new TipoPlatoNotFoundError()} })
@@ -83,7 +82,6 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-// Validamos si el plato es apto para celíacos basado en los ingredientes que lo componen
 function isAptoCeliacos(ingredientes: { ingrediente: Ingrediente; cantidadNecesaria: number }[]): boolean {
   let result: boolean | undefined
   for (let i = 0; i < ingredientes.length; i++) {
@@ -98,7 +96,6 @@ function isAptoCeliacos(ingredientes: { ingrediente: Ingrediente; cantidadNecesa
   return result
 }
 
-// Validamos si el plato es apto para vegetarianos basado en los ingredientes que lo componen
 function isAptoVegetarianos(ingredientes: { ingrediente: Ingrediente; cantidadNecesaria: number }[]): boolean {
   let result: boolean | undefined
   for (let i = 0; i < ingredientes.length; i++) {
@@ -113,7 +110,6 @@ function isAptoVegetarianos(ingredientes: { ingrediente: Ingrediente; cantidadNe
   return result
 }
 
-// Validamos si el plato es apto para veganos basado en los ingredientes que lo componen
 function isAptoVeganos(ingredientes: { ingrediente: Ingrediente; cantidadNecesaria: number }[]): boolean {
   let result: boolean | undefined
   for (let i = 0; i < ingredientes.length; i++) {
@@ -135,22 +131,17 @@ async function add(req: Request, res: Response) {
     } else if (req.body.ingredientes === undefined || req.body.ingredientes.length === 0) {
       throw new PlatoHasNoIngredientes()
     } else {
-      // Validamos que los ingredientes ingresados y sus cantidades sean correctos
       let ingredientes: {ingrediente: Ingrediente, cantidadNecesaria: number}[] = []
       await Promise.all(req.body.ingredientes.map(async (ingreCant: {ingrediente: number, cantidadNecesaria: number}) => {
             const ingre = await em.findOneOrFail(Ingrediente, { codigo: ingreCant.ingrediente }, {failHandler: () => {throw new IngredienteNotFoundError()} })
             ingredientes.push({ingrediente: ingre, cantidadNecesaria: ingreCant.cantidadNecesaria})
           }))
       const ingredientesValidos = validarIngredientesOfPlato(ingredientes);
-      // Validamos que los ingredientes ingresados y sus cantidades sean correctos
 
-      //Asignamos aptitud para celíacos, veganos y vegetarianos según los ingredientes ingresados
       req.body.sanitizedInput.aptoCeliacos = isAptoCeliacos(ingredientesValidos)
       req.body.sanitizedInput.aptoVegetarianos = isAptoVegetarianos(ingredientesValidos)
       req.body.sanitizedInput.aptoVeganos = isAptoVeganos(ingredientesValidos)
-      //Asignamos aptitud para celíacos, veganos y vegetarianos según los ingredientes ingresados
 
-      // Validamos el plato y lo creamos junto con las elaboracionesPlato necesarias
       req.body.sanitizedInput.tipoPlato = (await em.findOneOrFail(TipoPlato, { numPlato: req.body.sanitizedInput.tipoPlato }, 
         { failHandler: () => {throw new TipoPlatoNotFoundError()} })) as TipoPlato
       const platoValido = validarPlato(req.body.sanitizedInput)
@@ -185,13 +176,12 @@ async function update(req: Request, res: Response) {
   try {
     let ingredientesValidos
     if (req.body.ingredientes) {
-      //Los ingrediente que me envían serán la totalidad de los ingredientes del plato, no sólo los que quiero agregar
       let ingredientes: {ingrediente: Ingrediente, cantidadNecesaria: number}[] = [];
       await Promise.all(req.body.ingredientes.map(async (ingreCant: {ingrediente: number, cantidadNecesaria: number}) => {
             const ingre = await em.findOneOrFail(Ingrediente, { codigo: ingreCant.ingrediente }, { failHandler: () => { throw new IngredienteNotFoundError() } })
             ingredientes.push({ingrediente: ingre, cantidadNecesaria: ingreCant.cantidadNecesaria})
           }))
-      ingredientesValidos = validarIngredientesOfPlato(ingredientes); //Arreglo de ingredientes del plato
+      ingredientesValidos = validarIngredientesOfPlato(ingredientes);
       req.body.sanitizedInput.aptoCeliacos = isAptoCeliacos(ingredientesValidos)
       req.body.sanitizedInput.aptoVegetarianos = isAptoVegetarianos(ingredientesValidos)
       req.body.sanitizedInput.aptoVeganos = isAptoVeganos(ingredientesValidos)
@@ -210,7 +200,6 @@ async function update(req: Request, res: Response) {
       platoUpdated = validarPlato(req.body.sanitizedInput);
     }
 
-    // Creo las elaboracionesPlato que sean necesarias. Si ya existen, por supuesto, no las creo.
     if (ingredientesValidos !== undefined) {
       const elaboracionesPlato = await em.find(ElaboracionPlato, { plato: platoToUpdate })
       ingredientesValidos.map((ingredienteInput) => {
@@ -220,7 +209,6 @@ async function update(req: Request, res: Response) {
         }
       });
     }
-    // Creo las elaboracionesPlato que sean necesarias. Si ya existen, por supuesto, no las creo.
 
     em.assign(platoToUpdate, platoUpdated)
     console.log(platoUpdated)

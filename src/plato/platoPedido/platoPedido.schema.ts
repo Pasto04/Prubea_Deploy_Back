@@ -15,10 +15,6 @@ const platoPedidoSchema = z.object({
       })
       .int({ message: 'El plato debe ser un número entero' })
       .positive({ message: 'El plato debe ser un número entero positivo'}),
-  /*fechaSolicitud: z.string({required_error: 'La fecha de solicitud del plato es requerida'})
-                  .date('La fecha de solicitud debe tener el formato aaaa-mm-dd'),
-  horaSolicitud: z.string({required_error: 'La hora de solicitud del plato es requerida'})
-                 .time({message: 'La hora de solicitud del plato debe tener el formato HH:MM:SS'}),*/
   cantidad: z
     .number({
       required_error: 'La cantidad de platos es requerida',

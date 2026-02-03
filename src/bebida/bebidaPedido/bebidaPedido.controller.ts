@@ -71,7 +71,6 @@ type BebidaPedidoToValidate = {
 }
 
 function enoughBebidas(bebida: Bebida, cantidad: number) {
-  // Validamos que haya stock de bebidas
   if (bebida.stock < cantidad) {
     throw new BebidaPedidoNotEnoughStockError()
   }
@@ -86,14 +85,13 @@ async function adjustBebidas(bebidaPedido: BebidaPedidoToValidate) {
   await em.persistAndFlush(bebida)
 }
 
-//Esta funcionalidad permite agregar una bebida a un pedido. La bebida debe existir en la base de datos y el pedido debe estar en estado "en curso".
 async function add(req: Request, res: Response) {
   try {
     const nroPed = Number.parseInt(req.params.nroPed)
     const pedido = await em.findOneOrFail(Pedido, { nroPed }, { failHandler: () => {throw new PedidoNotFoundError()} })
     const codBebida = req.body.sanitizedInput.bebida
     const bebida = await em.findOneOrFail(Bebida, { codBebida }, { failHandler: () => {throw new BebidaNotFoundError()} })
-    alreadyEnded(pedido) //Validamos que el pedido no haya finalizado
+    alreadyEnded(pedido) 
     validarBebidaPedido(req.body.sanitizedInput)
 
     req.body.sanitizedInput.pedido = pedido
@@ -101,7 +99,7 @@ async function add(req: Request, res: Response) {
 
     enoughBebidas(req.body.sanitizedInput.bebida, req.body.sanitizedInput.cantidad) // Validamos que haya stock de la bebida
 
-    adjustBebidas(req.body.sanitizedInput) // Ajustamos el stock de bebidas luego de agregar una bebida al pedido
+    adjustBebidas(req.body.sanitizedInput) 
 
     const bebidaPedido = em.create(BebidaPedido, req.body.sanitizedInput)
     em.persist(bebidaPedido)
@@ -113,10 +111,6 @@ async function add(req: Request, res: Response) {
   }
 }
 
-/* NO TIENE SENTIDO ACTUALIZAR UNA BEBIDA DE UN PEDIDO. SI EL CLIENTE DESEA ORDENAR NUEVAMENTE UNA BEBIDA, SE CREARÁ Y QUEDARÁ 
-REGISTRADA CON UNA HORA Y UNA FECHA DISTINTA DENTRO DEL MISMO PEDIDO.
-Este método únicamente permitirá a los usuarios (ya sea empleado o cliente) modificar el atributo "entregado" de BebidaPedido a "true".
-*/
 async function update(req: Request, res: Response) {
   try {
     const nroPed = Number.parseInt(req.params.nroPed);
@@ -160,9 +154,8 @@ async function remove(req: Request, res: Response) {
     const horaSolicitud = req.params.hora
     const bebidaPedido = await em.findOneOrFail(BebidaPedido, { pedido, bebida, fechaSolicitud, horaSolicitud }, 
       { failHandler: () => {throw new BebidaPedidoNotFoundError()} })
-    isAlreadyDelivered(bebidaPedido) //Validamos que la bebida no haya sido entregada. Dado ese caso, no puede eliminarse del pedido.
-
-    returnBebidas(bebidaPedido) // Devolvemos las bebidas que fueron devueltas.
+    isAlreadyDelivered(bebidaPedido) 
+    returnBebidas(bebidaPedido) 
     await em.removeAndFlush(bebidaPedido)
     res.status(200).json({message: `La bebida ${bebida.descripcion} del pedido ${pedido.nroPed} ha sido eliminada con éxito`,
       data: bebidaPedido})

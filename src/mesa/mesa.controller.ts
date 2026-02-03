@@ -45,8 +45,7 @@ async function add(req:Request,res:Response) {
   }
 }
 
-//La única razón para utilizar este método sería cambiar la cantidad de personas que pueden utilizar la misma mesa, lo cual me parece
-// que no vale la pena. Igualmente dejo este método, pero no creo que se utilice.
+
 async function update(req:Request,res:Response){
   try{
     const nroMesa = Number.parseInt(req.params.nroMesa)

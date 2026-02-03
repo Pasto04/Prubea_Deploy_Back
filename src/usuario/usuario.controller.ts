@@ -9,9 +9,6 @@ import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
 import { SECRET_JWT_KEY } from "../shared/config.js"
 
-/*
-HABILITAR LUEGO LOS PERMISOS DE USUARIO
-*/
 
 const em = orm.em
 
@@ -44,9 +41,7 @@ function sanitizeLogIn(req: Request, res: Response, next: NextFunction) {
 async function findAllByTipoUsuario(req:Request, res:Response) {
   try{
     const token = req.cookies.accessToken
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
+
     const { tipoUsuario } = req.query
     if(tipoUsuario){
       const tipoUsuario = (req.query.tipoUsuario as string).toLowerCase()
@@ -61,9 +56,7 @@ async function findAllByTipoUsuario(req:Request, res:Response) {
 async function findOne(req:Request,res:Response) {
   try{
     const token = req.cookies.accessToken
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
+
     const id = Number.parseInt(req.params.id)
     const usuario = await em.findOneOrFail(Usuario, {id},)
     res.status(200).json({message: 'Usuario encontrado', data: usuario})
@@ -89,7 +82,7 @@ async function addUsuario(req: Request, res: Response){
   }
 }
 
-//Recibo mail y contraseña del usuario, lo busco por su mail. Si lo encuentro, valido la contraseña. Si es válida, 
+
 async function logInUsuario(req: Request, res: Response) {
   try { 
     const emailYContraseniaValidos = validarUsuarioLogIn(req.body.sanitizedLogIn)
@@ -106,22 +99,15 @@ async function logInUsuario(req: Request, res: Response) {
       expiresIn: '3h'
     })
 
-    // --- LÓGICA DE PRODUCCIÓN VS DESARROLLO ---
-    // Detectamos si estamos en Producción (Render setea NODE_ENV a 'production' por defecto)
+
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie('accessToken', token, {
-      httpOnly: true, // Siempre true por seguridad (JS no puede leerla)
-      
-      // En Prod (Render) debe ser true porque usas HTTPS. 
-      // En Local (localhost) debe ser false porque usas HTTP.
+      httpOnly: true, 
       secure: isProduction, 
 
-      // En Prod (Netlify -> Render) son dominios distintos, NECESITAS 'none'.
-      // En Local (localhost -> localhost) 'lax' funciona mejor y da menos problemas.
       sameSite: isProduction ? 'none' : 'lax',
       
-      // OJO: Tenías "3000 * ..." que son 3 segundos. Corregido a 1 hora x 3
       maxAge: 1000 * 60 * 60 * 3 
     })
     .status(200).json({message: 'Sesión iniciada con éxito', data: usuarioPublico})
@@ -131,7 +117,7 @@ async function logInUsuario(req: Request, res: Response) {
   }
 }
 
-// ... resto del archivo ...
+
 
 function logOutUsuario(req: Request, res: Response) {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -147,9 +133,6 @@ function logOutUsuario(req: Request, res: Response) {
 async function updateUsuario (req:Request,res:Response){
   try {
     const token = req.cookies.accessToken
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
     const id = Number.parseInt(req.params.id)
     const usuarioToUpdate = await em.findOneOrFail(Usuario, {id})
     let usuarioUpdated
@@ -172,9 +155,6 @@ async function updateUsuario (req:Request,res:Response){
 async function remove (req:Request,res:Response) {
   try {
     const token = req.cookies.accessToken
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
     const id = Number.parseInt(req.params.id)
     const cliente = await em.findOneOrFail(Usuario, {id})
     await em.removeAndFlush(cliente)

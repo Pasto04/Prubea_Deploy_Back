@@ -102,9 +102,9 @@ async function add(req: Request, res: Response) {
     req.body.sanitizedInput.cliente = id
     const cliente = await em.findOneOrFail(Usuario, { id }, { populate: ['pedidos'], failHandler: () => {throw new UsuarioNotFoundError()}})
    
-    pedidoAlreadyExists(cliente) // Verifico que el cliente no tenga un pedido en curso
+    pedidoAlreadyExists(cliente) 
     
-    allMesasBusy() // Valido que haya mesas disponibles. Igualmente, la mesa ingresada en la request debería estar disponible.
+    allMesasBusy()
     
     const mesa = await em.findOneOrFail(Mesa, { nroMesa: req.body.sanitizedInput.mesa }, { failHandler: () => {throw new MesaNotFoundError()} })
     
@@ -132,19 +132,10 @@ async function fillSanitizedInput(pedido: Pedido, req: Request, pago: Pago) {
   req.body.sanitizedInput.cliente = pedido.cliente.id
   req.body.sanitizedInput.mesa = pedido.mesa.nroMesa
   req.body.sanitizedInput.pago = pago.pedido.nroPed
-
-  // Como ya almacenamos los platos y bebidas en la base de datos cuando el cliente los va agregando a su pedido, 
-  // no creo que sea necesario buscarlos y asignarlos nuevamente al pedido. (de ninguna de las 2 maneras)
-  /*const platosPedido = validarFindAll(await em.find(PlatoPedido, { pedido }, { populate: ['plato']}), PlatoPedidoNotFoundError)
-  const bebidasPedido = validarFindAll(await em.find(BebidaPedido, { pedido }, { populate: ['bebida']}), BebidaPedidoNotFoundError)
-  req.body.sanitizedInput.platosPedido = platosPedido
-  req.body.sanitizedInput.bebidasPedido = bebidasPedido*/
-
   req.body.sanitizedInput.platosPedido = pedido.platosPedido.getItems()
   req.body.sanitizedInput.bebidasPedido = pedido.bebidasPedido.getItems()
 }
 
-// Permite finalizar el pedido, se debe usar PUT.
 async function update(req: Request, res: Response) {
   try {
     const nroPed = Number.parseInt(req.params.nroPed)
@@ -179,7 +170,7 @@ async function update(req: Request, res: Response) {
   }
 }
 
-// Permite cancelar el pedido, se debe usar PUT
+
 async function cancel(req: Request, res: Response) {
   try {
     const nroPed = Number.parseInt(req.params.nroPed)
@@ -214,7 +205,7 @@ async function cancel(req: Request, res: Response) {
   }
 }
 
-// Por ahora permite eliminar el pedido, pero lo ideal sería cancelarlo (es decir, este método será eliminado)
+
 async function remove(req: Request, res: Response) {
   try {
     const nroPed = Number.parseInt(req.params.nroPed)

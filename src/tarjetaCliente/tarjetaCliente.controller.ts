@@ -34,13 +34,10 @@ function sanitizeTarjetaCliente(req: Request, res: Response, next: NextFunction)
   next()
 }
 
-//Sería interesante manejar queryString para consultas como "findAll tarjetas de crédito/débito"
 async function findAll(req:Request,res:Response) {
   try{
     const token = req.cookies.access_token
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
+
     const id = Number.parseInt(req.params.id)
     const cliente = await em.findOneOrFail(Usuario, {id}, {failHandler: () => {throw new UsuarioNotFoundError}})
     const tarjetasCliente = validarFindAll(await em.find(TarjetaCliente, {cliente}, {populate: ['tarjeta', 'cliente']}), TarjetaClienteNotFoundError)
@@ -50,13 +47,9 @@ async function findAll(req:Request,res:Response) {
   }
 }
 
-//Sería bueno manejar queryString por si se quiere buscar por número de tarjeta, por ejemplo.
 async function findOne(req:Request,res:Response) {
   try{
     const token = req.cookies.access_token
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
     const idTarjeta = Number.parseInt(req.params.idTarjeta)
     const id = Number.parseInt(req.params.id)
     const cliente = await em.findOneOrFail(Usuario, {id}, {failHandler: () => {throw new UsuarioNotFoundError}})
@@ -70,9 +63,7 @@ async function findOne(req:Request,res:Response) {
 async function add(req:Request,res:Response) {
   try{
     const token = req.cookies.accessToken
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    } else*/ if((await em.find(Tarjeta, {})).length === 0 || (await em.find(Usuario, {tipoUsuario: 'cliente'})).length === 0) {
+  if((await em.find(Tarjeta, {})).length === 0 || (await em.find(Usuario, {tipoUsuario: 'cliente'})).length === 0) {
       throw new TarjetaClientePreconditionFailed
     } 
     const id = Number.parseInt(req.params.id)
@@ -115,9 +106,6 @@ async function update(req:Request,res:Response) {
 async function remove(req:Request, res:Response) {
   try {
     const token = req.cookies.access_token
-    /*if(!token) {
-      throw new UsuarioUnauthorizedError
-    }*/
     const idTarjeta = Number.parseInt(req.params.idTarjeta)
     const id = Number.parseInt(req.params.id)
     const cliente = await em.findOneOrFail(Usuario, {id}, {populate: [], failHandler: () => {throw new UsuarioNotFoundError}})

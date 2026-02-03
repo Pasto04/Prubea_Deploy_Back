@@ -1,13 +1,13 @@
 import 'reflect-metadata'
-import 'dotenv/config' // Carga variables de entorno locales si existen
+import 'dotenv/config' 
 import { RequestContext } from '@mikro-orm/core'
 import { orm, syncSchema } from './shared/db/orm.js'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import helmet from 'helmet' // Seguridad extra para producción
+import helmet from 'helmet' 
 
-// Routers
+
 import { ingredienteRouter } from './ingrediente/ingrediente.routes.js'
 import { tipoPlatoRouter } from './plato/tipoPlato.routes.js'
 import { platoRouter } from './plato/plato.routes.js'
@@ -27,45 +27,38 @@ import { bebidaPedidoRouter } from './bebida/bebidaPedido/bebidaPedido.routes.js
 import { PedidoPagoRouter } from './pedido/pago/pago.routes.js'
 import { bebidaDeProveedorRouter } from './bebida/bebidaDeProveedor/bebidaDeProveedor.routes.js'
 
-// 1. Configuración de Puerto
-// Render nos dará el puerto en process.env.PORT automáticamente
+
 const port = process.env.PORT || 3000 
 const app = express()
 app.set('trust proxy', 1)
 
-// 2. Middlewares Básicos
 app.use(express.json())
 app.use(cookieParser())
 app.use(helmet()) 
 
-// 3. Configuración de CORS Dinámica
-// En Render, definiremos la variable ALLOWED_ORIGINS con la URL de Netlify
+
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:4200')
   .split(',')
   .map(origin => origin.trim());
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // !origin permite peticiones server-to-server o Postman
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
-      console.error(`Bloqueado por CORS: ${origin}`); // Log útil para ver errores en Render
+      console.error(`Bloqueado por CORS: ${origin}`); 
       callback(new Error('Not allowed by CORS'))
     }
   },
-  credentials: true, // Permite envío de Cookies (CRÍTICO para tu login)
+  credentials: true, 
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 };
 
 app.use(cors(corsOptions));
 
-// 4. SOLUCIÓN PARA EL ERROR 404 (OPTIONS)
-// Maneja las peticiones "pre-flight" antes de que lleguen a las rutas o al handler 404
 app.options('*', cors(corsOptions));
 
-// 5. Contexto de MikroORM
 app.use((req, res, next) => {
   RequestContext.create(orm.em, next)
 })
@@ -92,17 +85,15 @@ app.use('/api/mesas', mesaRouter)
 app.use('/api/bebidas', bebidaDeProveedorRouter)
 app.use('/api/bebidas', bebidaRouter)
 
-// 7. Manejador 404 (Siempre al final y devolviendo JSON)
 app.use((req, res) => {
   res.status(404).json({ message: 'Recurso no encontrado' })
 })
 
-// 8. Inicialización
 const startServer = async () => {
   try {
-    await syncSchema() // Asegura que la DB esté sincronizada
+    await syncSchema() 
     app.listen(port, () => {
-      console.log(`✅ Server running in: http://localhost:${port}/`)
+      console.log(`Server running in: http://localhost:${port}/`)
     })
   } catch (error) {
     console.error('Error al iniciar el servidor:', error)

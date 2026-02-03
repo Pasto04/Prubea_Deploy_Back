@@ -157,4 +157,3 @@ function validarBebidaPatch(object: any) {
 
 export { validarBebida, validarBebidaPatch }
 
-/* , {message: 'La unidad de medida de la bebida debe ser "l" (litros) o "ml" (mililitros'} */

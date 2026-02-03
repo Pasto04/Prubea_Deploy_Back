@@ -47,22 +47,6 @@ async function add(req: Request, res: Response) {
   }
 }
 
-/* NO TIENE SENTIDO DEFINIR UN UPDATE PARA ESTA ENTIDAD. SÓLO SERÁ CREADA Y ELIMINADA
-async function update(req: Request, res: Response) {
-  try {
-    const codBebida = Number.parseInt(req.params.cod)
-    const id = Number.parseInt(req.params.id)
-    const bebida = await em.findOneOrFail(Bebida, {codBebida})
-    const proveedor = await em.findOneOrFail(Proveedor, {id})
-    const bebidaDeProv = await em.findOneOrFail(BebidaDeProveedor, {bebida, proveedor})
-    em.assign(bebidaDeProv, req.body.sanitizedBebidaDeProveedor)
-    await em.flush()
-    res.status(200).json({message: `El proveedor de cuit "${proveedor.cuit}" de la bebida "${bebida.descripcion}" ha sido actualizado con éxito`, data: bebidaDeProv})
-  } catch (error: any) {
-    res.status(500).json({message: error.message})
-  }
-}*/
-
 async function remove(req: Request, res: Response) {
   try {
     const codBebida = Number.parseInt(req.params.codBebida)

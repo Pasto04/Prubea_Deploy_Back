@@ -11,7 +11,6 @@ const em = orm.em
 
 em.getRepository(Tarjeta)
 
-// Obtener todas las tarjetas
 async function findAll(req: Request, res: Response) {
   try {
     const tarjetas = validarFindAll(await em.find(Tarjeta, {}), TarjetaNotFoundError)
@@ -21,7 +20,6 @@ async function findAll(req: Request, res: Response) {
   }
 }
 
-// Obtener una tarjeta por su ID
 async function findOne(req: Request, res: Response) {
   try {
     const idTarjeta = Number.parseInt(req.params.idTarjeta)
@@ -32,7 +30,6 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-// Crear una nueva tarjeta
 async function add(req: Request, res: Response) {
   try {
     const tarjetaValida = validarTarjeta(req.body)
@@ -47,7 +44,6 @@ async function add(req: Request, res: Response) {
   }
 }
 
-// Actualizar una tarjeta existente
 async function update(req: Request, res: Response) {
   try {
     const tarjetaValida = validarTarjeta(req.body)
@@ -64,18 +60,13 @@ async function update(req: Request, res: Response) {
   }
 }
 
-// Eliminar una tarjeta
 async function remove(req: Request, res: Response) {
   try {
     const idTarjeta = Number.parseInt(req.params.idTarjeta)
     const tarjeta = await em.findOneOrFail(Tarjeta, { idTarjeta }, {populate: ['tarjetaClientes'], failHandler: () => {throw new TarjetaNotFoundError()}})
-    // Usamos "populate" para obtener todas las tarjetas del cliente
-
-    // Validamos que no exista ninguna tarjetaCliente que sea de este tipo de tarjeta (Visa, Mastercard, etc)
     if(tarjeta.tarjetaClientes.length > 0) {
       throw new TarjetaAlreadyInUseError
     }
-    // Validamos que no exista ninguna tarjetaCliente que sea de este tipo de tarjeta (Visa, Mastercard, etc)
 
     await em.removeAndFlush(tarjeta);
     res.status(200).json({ message: 'La tarjeta ha sido eliminada con éxito', data: tarjeta })

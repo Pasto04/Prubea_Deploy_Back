@@ -7,6 +7,6 @@ export const getResenaRouter = Router();
 getResenaRouter.get('/:nroPed/resena', findOne);
 export const pedidoResenaRouter = Router();
 pedidoResenaRouter.post('/:id/pedidos/:nroPed/resena', verificarToken, sanitizeResena, add);
-pedidoResenaRouter.put('/:id/pedidos/:nroPed/resena', verificarToken, sanitizeResena, update); // Funciona correctamente
+pedidoResenaRouter.put('/:id/pedidos/:nroPed/resena', verificarToken, sanitizeResena, update);
 pedidoResenaRouter.delete('/:id/pedidos/:nroPed/resena', verificarToken, remove);
 //# sourceMappingURL=rese%C3%B1a.routes.js.map

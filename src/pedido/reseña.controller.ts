@@ -22,7 +22,7 @@ function sanitizeResena(req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-//Agregar los filtros correspondientes
+
 async function findAll(req:Request, res:Response) {
   try{
     const resenas = validarFindAll(await em.find(Resena, {}, {populate: ['pedido']}), ResenaNotFoundError)
@@ -53,33 +53,27 @@ async function add(req:Request, res:Response) {
     req.body.sanitizedInput.pedido = nroPed
     const pedido = await em.findOneOrFail(Pedido, { nroPed }, {populate: ['cliente'], failHandler: () => {throw new PedidoNotFoundError}})
 
-    //Validamos que el pedido haya finalizado
+
     if(pedido.estado !== 'finalizado') {
       throw new ResenaAPedidoNoFinalizado()
     }
-    //Validamos que el pedido haya finalizado
 
-    //Validamos que el pedido no cuente ya con una reseña
+
+
     const resenaExistente = await em.findOne(Resena, { pedido })
     if(resenaExistente !== null) {
       throw new ResenaAlreadyExists()
     }
-    //Validamos que el pedido no cuente ya con una reseña
 
-    //Validamos que el cliente que realiza la reseña sea el mismo que realizó el pedido
 
     if(pedido.cliente !== usuario) {
       throw new ResenaDePedidoAjeno()
     }
 
-    //Validamos que el cliente que realiza la reseña sea el mismo que realizó el pedido
+
 
     const fecha = new Date()
 
-    /* No logramos que ZOD reconozca el tipo Date, por lo que la entidad "resena" a ser creada no pasa por esta validación
-    req.body.sanitizedInput.fechaHoraResena = fecha.toISOString()
-    req.body.sanitizedInput.fechaHoraModificacion = fecha.toISOString()
-    */
 
     validarResena(req.body.sanitizedInput)
 
@@ -106,13 +100,12 @@ async function update(req:Request, res:Response) {
     
     const resena = await em.findOneOrFail(Resena, { pedido }, {populate: ['pedido.cliente'], failHandler: () => {throw new ResenaNotFoundError}})
 
-    //Validamos que el cliente que modifica la reseña sea el mismo que realizó el pedido
 
     if(pedido.cliente !== usuario) {
       throw new ResenaDePedidoAjeno('No puedes modificar una reseña de un pedido que no realizaste')
     }
 
-    //Validamos que el cliente que modifica la reseña sea el mismo que realizó el pedido
+
 
     req.body.sanitizedInput.fechaHoraModificacion = new Date()
 
@@ -140,13 +133,13 @@ async function remove (req: Request, res: Response,) {
     const pedido = await em.findOneOrFail(Pedido, { nroPed }, {failHandler: () => {throw new PedidoNotFoundError}});
     const deletedResena = await em.findOneOrFail(Resena, { pedido }, {failHandler: () => {throw new ResenaNotFoundError}}) 
 
-    //Validamos que el cliente que modifica la reseña sea el mismo que realizó el pedido
+
 
     if(pedido.cliente !== usuario) {
       throw new ResenaDePedidoAjeno('No puedes modificar una reseña de un pedido que no realizaste')
     }
 
-    //Validamos que el cliente que modifica la reseña sea el mismo que realizó el pedido
+
 
     await em.removeAndFlush(deletedResena)
     res.status(200).json({message: `La reseña del pedido ${nroPed} ha sido eliminada con éxito`, data: deletedResena})

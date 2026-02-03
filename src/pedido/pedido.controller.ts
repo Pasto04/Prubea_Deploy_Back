@@ -36,7 +36,7 @@ function sanitizeQuery(req: Request) {
     estado: req.query.estado,
     fecha: req.query.fecha,
     fechaCancelacion: req.query.fechaCancelacion,
-    mesa: req.query.mesa, //Asumo que me ingresan el número de la mesa
+    mesa: req.query.mesa, 
   }
   for (let key of Object.keys(queryResult)) {
     if (queryResult[key] === undefined) {
@@ -46,7 +46,7 @@ function sanitizeQuery(req: Request) {
   return queryResult
 }
 
-//Manejar posibles QueryStrings para filtrar pedidos por estado, fecha, fechaCancelación y mesa.
+
 async function findAll(req: Request, res: Response) {
   try {
     const sanitizedQuery = sanitizeQuery(req)
@@ -71,50 +71,5 @@ async function findOne(req: Request, res: Response) {
     handleErrors(error, res)
   }
 }
-
-/* NO SE DEBERÍAN PODER CREAR, MODIFICAR NI ELIMINAR PEDIDOS DESDE UN USUARIO EMPLEADO. 
-ESTE SÓLO DEBERÍA PODER VER O ACCEDER A TODOS LOS PEDIDOS PARA OBTENER LISTADOS Y HACER ESTADÍSTICAS.
-
-Sin embargo, deberían ser capaces de modificar el estado de entrega de los platos y bebidas de un pedido en curso (entregado de false a true)
-async function add(req:Request,res:Response) {
-  try{
-    const pedidoValido = validarPedido(req.body)
-    const pedido = em.create(Pedido, pedidoValido)
-    await em.flush()
-    res.status(201).json({message: 'Pedido creado', data:pedido})
-  } catch (error:any){
-    handleErrors(error, res)
-  }
-}
-
-async function update (req:Request,res:Response){
-  try{
-    const nroPed = Number.parseInt(req.params.nroPed)
-    const pedidoToUpdate = await em.findOneOrFail(Pedido, {nroPed})
-    let pedidoUpdated
-    if(req.method === 'PATCH') {
-      pedidoUpdated = validarPedidoPatch(req.body)
-    } else {
-      pedidoUpdated = validarPedido(req.body)
-    }
-    em.assign(pedidoToUpdate, req.body.sanitizedInput)
-    await em.flush()
-    res.status(200).json({message: 'Pedido actualizado', data: pedidoToUpdate})
-  } catch (error:any){
-    handleErrors(error, res)
-  }
-}
-
-async function remove (req:Request,res:Response) {
-    try {
-    const nroPed = Number.parseInt(req.params.nroPed)
-    const pedido = await em.findOneOrFail(Pedido, {nroPed})
-    em.removeAndFlush(pedido)
-    res.status(200).json({message: 'El pedido ha sido eliminado con éxito', data: pedido})
-  } catch(error: any) {
-    handleErrors(error, res)
-  }
-}
-*/
 
 export { sanitizePedidoInput, findAll, findOne /*,add,update,remove*/ }
