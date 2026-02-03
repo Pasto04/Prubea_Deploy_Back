@@ -8,11 +8,11 @@ pedidoClienteRouter.get('/:id/pedidos', verificarToken, findAll)
 
 pedidoClienteRouter.get('/pedidos/:nroPed', verificarToken, findOne)
 
-pedidoClienteRouter.post('/:id/pedidos', verificarToken, sanitizePedidoCliente, add) // Crear pedido
+pedidoClienteRouter.post('/:id/pedidos', verificarToken, sanitizePedidoCliente, add)
 
-pedidoClienteRouter.put('/pedidos/:nroPed', verificarToken, sanitizePedidoCliente, update) // Pagar y finalizar pedido
+pedidoClienteRouter.put('/pedidos/:nroPed', verificarToken, sanitizePedidoCliente, update) 
 
-pedidoClienteRouter.put('/pedidos/:nroPed/cancelar', verificarToken, sanitizePedidoCliente, cancel) // Cancelar pedido
+pedidoClienteRouter.put('/pedidos/:nroPed/cancelar', verificarToken, sanitizePedidoCliente, cancel) 
 
 pedidoClienteRouter.delete('/pedidos/:nroPed', verificarToken, remove)
-// En realidad lo ideal sería no eliminar ningún pedido, sino cancelarlos.
+

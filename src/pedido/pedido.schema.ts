@@ -55,8 +55,7 @@ const pedidoToEndSchema = z.object({
         })
         .int({ message: 'La mesa debe ser un número entero' })
         .positive({ message: 'La mesa debe ser un número entero positivo'}),
-  /*platosPedido: z.array(z.instanceof(PlatoPedido)),
-  bebidasPedido: z.array(z.instanceof(BebidaPedido)),*/
+
   pago: z.number({
           required_error: 'El pago es requerido',
           invalid_type_error: 'El pago debe ser un número',

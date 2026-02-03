@@ -32,7 +32,6 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-//Se utilizaría para agregar un nuevo proveedor a un ingrediente ya existente.
 async function add(req: Request, res: Response) {
   try {
     const codigo = Number.parseInt(req.params.cod)
@@ -49,21 +48,6 @@ async function add(req: Request, res: Response) {
   }
 }
 
-/* NO TIENE SENTIDO DEFINIR UN UPDATE PARA ESTA ENTIDAD. SÓLO SERÁ CREADA Y ELIMINADA
-async function update(req: Request, res: Response) {
-  try {
-    const codigo = Number.parseInt(req.params.cod)
-    const id = Number.parseInt(req.params.id)
-    const ingrediente = await em.findOneOrFail(Ingrediente, {codigo})
-    const proveedor = await em.findOneOrFail(Proveedor, {id})
-    const ingreDeProv = await em.findOneOrFail(IngredienteDeProveedor, {ingrediente, proveedor})
-    em.assign(ingreDeProv, req.body.sanitizedIngredienteDeProveedor)
-    await em.flush()
-    res.status(200).json({message: `El proveedor de cuit "${proveedor.cuit}" del ingrediente "${ingrediente.descIngre}" ha sido actualizado con éxito`, data: ingreDeProv})
-  } catch (error: any) {
-    res.status(500).json({message: error.message})
-  }
-}*/
 
 async function remove(req: Request, res: Response) {
   try {

@@ -16,31 +16,7 @@ const em = orm.em
 
 em.getRepository(Proveedor)
 
-// Como uso Zod, no requiero esta función, pero la conservo para tenerla en cuenta en el futuro 
-// Tener en cuenta que acá no se están utilizando los errores personalizados creados.
-/*function validarRequest(req: {id?: number, razonSocial?: string, cuit?: string, direccion?: string, telefono?: string, email?: string}) {
-  if (req.id !== undefined && typeof req.id !== 'number') {
-    const newError = new Error('id debe ser number')
-    throw newError
-  } else if (req.razonSocial !== undefined && typeof req.razonSocial !== 'string') {
-    const newError = new Error('razonSocial debe ser string')
-    console.log(newError)
-    throw newError
-  } else if (req.cuit !== undefined && typeof req.cuit !== 'string') {
-    const newError = new Error('cuit debe ser string')
-    throw newError
-  } else if (req.direccion !== undefined && typeof req.direccion !== 'string') {
-    const newError = new Error('direccion debe ser string')
-    throw newError
-  } else if (req.telefono !== undefined && typeof req.telefono !== 'string') {
-    const newError = new Error('telefono debe ser string')
-    throw newError
-  } else if (req.email !== undefined && typeof req.email !== 'string') {
-    const newError = new Error('email debe ser string')
-    throw newError
-  }
-  return 
-}*/
+
 
 async function findAll(req: Request, res: Response) {
   try {
@@ -101,10 +77,9 @@ async function remove(req: Request, res: Response) {
     const id = Number.parseInt(req.params.id)
     const proveedor = await em.findOneOrFail(Proveedor, {id}, {failHandler: () => {throw new ProveedorNotFoundError}})
 
-    // Validamos que cada ingrediente que esté asociado a este proveedor tenga, por lo menos, otro proveedor asociado para poder eliminarlo
     const ingredientes = await em.find(Ingrediente, {}, {populate: ['ingredienteDeProveedor']})
     ingredientes.forEach((ingrediente: Ingrediente) => {
-      if(Object.keys(ingrediente.ingredienteDeProveedor).length < 11) { // 11 representa la cantidad de elementos almacenados dentro del objeto "Collection". Sólo 2 representan instancias de "IngredienteDeProveedor", mientras que los demás son elementos propios de la colección
+      if(Object.keys(ingrediente.ingredienteDeProveedor).length < 11) { 
         ingrediente.ingredienteDeProveedor.getItems().forEach((ingreDeProv) => { 
           if(ingreDeProv.proveedor.id === proveedor.id) {
             throw new ProveedorIsUniqueForIngredienteError    
@@ -122,9 +97,7 @@ async function remove(req: Request, res: Response) {
         })
       }
     })
-    // Validamos que cada ingrediente que esté asociado a este proveedor tenga, por lo menos, otro proveedor asociado para poder eliminarlo
-    
-    // Una vez hecho esto, traemos todas las instancias de IngredienteDeProveedor y BebidaDeProveedor correspondientes y las eliminamos junto con el proveedor
+   
     const ingredientesDeProveedor = await em.find(IngredienteDeProveedor, {proveedor})
     ingredientesDeProveedor.map((ingreDeProveedor) => {
       em.remove(ingreDeProveedor)
@@ -135,7 +108,6 @@ async function remove(req: Request, res: Response) {
     })
     em.remove(proveedor)
     await em.flush()
-    // Una vez hecho esto, traemos todas las instancias de IngredienteDeProveedor y BebidaDeProveedor correspondientes y las eliminamos junto con el proveedor
     
     res.status(200).json({message: `El proveedor ${proveedor.razonSocial} ha sido eliminado con éxito`, data: proveedor})
   } catch(error: any) {

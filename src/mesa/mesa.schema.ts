@@ -64,6 +64,3 @@ function validarMesaToPatch(object: any) {
 
 export { validarMesa, validarMesaToPatch }
 
-/* .includes('Disponible' | 'Ocupada', {message: 'El estado de la mesa puede ser Disponible u Ocupada'})
-          .or(z.string().includes('Ocupada', {message: 'El estado de la mesa puede ser Disponible u Ocupada'}))
-          .optional() */

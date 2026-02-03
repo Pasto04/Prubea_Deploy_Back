@@ -7,11 +7,7 @@ const resenaSchema = z.object({
     required_error: 'El pedido es requerido',
     invalid_type_error: 'El pedido se representa con un valor numérico'
   }).positive({message: 'El pedido debe ser un número positivo'}),
-  //tenemos problemas para que ZOD reconozca el tipo Date, por lo que la entidad "resena" a ser creada no pasa por esta validación
-  /*fechaHoraResena: z.string({required_error: 'La fecha de publicación de la reseña es requerida'})
-               .datetime('La fecha debe tener el formato aaaa-mm-dd')
-               .optional(),
-  fechaHoraModificacion: z.string().date('La fecha debe tener el formato aaaa-mm-dd').optional(),*/
+  
   cuerpo: z.string({
             required_error: 'El cuerpo de la reseña es requerido', 
             invalid_type_error: 'El cuerpo de la reseña debe ser un string'
@@ -27,10 +23,7 @@ const resenaSchema = z.object({
 })
 
 const resenaToPatchSchema = z.object({
-  //tenemos problemas para que ZOD reconozca el tipo Date, por lo que la entidad "resena" a ser creada no pasa por esta validación
-  /*fechaResena: z.string({required_error: 'La fecha de publicación de la reseña es requerida'})
-               .date('La fecha debe tener el formato aaaa-mm-dd').optional(),
-  fechaModificacion: z.string().date('La fecha debe tener el formato aaaa-mm-dd').optional(),*/
+
   cuerpo: z.string({
             required_error: 'El cuerpo de la reseña es requerido', 
             invalid_type_error: 'El cuerpo de la reseña debe ser un string'

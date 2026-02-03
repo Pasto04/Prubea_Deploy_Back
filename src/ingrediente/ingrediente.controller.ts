@@ -41,9 +41,7 @@ function sanitizeQuery(req: Request){
     aptoVegetarianos: req.query.aptoVegetarianos,
     aptoVeganos: req.query.aptoVeganos
   }
-// El operador "!!" me permite convertir la cadena proveniente del queryString en el booleano "true"
-// "!!!" convierte la cadena en "false"
-// Esto también puede realizarse con el método "Boolean(cadena)", siendo este resultado = true y !Boolean(cadena) = false
+
   Object.keys(queryResult).forEach((keys) => {
     if(queryResult[keys] === undefined) {
       delete queryResult[keys]
@@ -61,7 +59,6 @@ function sanitizeQuery(req: Request){
   return queryResult
 }
 
-// Validar recepción de queryString como la entidad "Bebida" (Ingrediente será más compleja)
 async function findAll(req: Request, res: Response) {
   try {
     req.query.sanitizedQuery = sanitizeQuery(req)
@@ -82,9 +79,6 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-
-// Validamos que, si no hay proveedores registrados, no se puedan agregar ingredientes
-// Sincronizamos la creación de ingredientes con la creación de "IngredienteDeProveedor".
 async function add(req: Request, res: Response) {
   try {
     if ((await em.find(Proveedor, {})).length === 0) {
@@ -98,7 +92,6 @@ async function add(req: Request, res: Response) {
       const id = Number.parseInt(req.body.proveedor)
       const proveedor = await em.findOneOrFail(Proveedor, {id}, {failHandler: () => {throw new ProveedorNotFoundError}})
       const ingredienteDeProveedor = em.create(IngredienteDeProveedor, {ingrediente: ingre, proveedor})
-      // creación de la relación entre ingrediente y proveedor 
       await em.flush()
       res.status(201).json({message: `El ingrediente ${ingre.descIngre} fue creado con éxito`, data: ingre})
     }

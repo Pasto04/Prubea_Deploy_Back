@@ -22,15 +22,10 @@ async function sanitizePagoInput(req:Request, res:Response, next:NextFunction){
     tarjetaCliente: Number.parseInt(req.body.tarjetaCliente)
   }
 
-  /*Object.keys(req.body.sanitizedInput).forEach(key => {
-    if(req.body.sanitizedInput [key] === undefined){
-      delete req.body.sanitizedInput [key]
-    }
-  })*/
+
   next()
 }
 
-//Modificar el método para sólo tome el nroPed y, con eso, identifique el pago. La ruta será '/:nroPed/pago'
 async function findOne(req:Request,res:Response) {
   try{
     const nroPed = Number.parseInt(req.params.nroPed)
@@ -51,7 +46,6 @@ function validarEntregaDeElementos(pedido: Pedido): void {
   })
 }
 
-// RECORDAR HACER BIEN EL POPULATE DE LA ENTIDAD PEDIDO PARA QUE MUESTRE CORRECTAMENTE LOS PRECIOS
 function calcularImporte(pedido: Pedido, totalPlatos: number = 0, totalBebidas: number = 0): number {
   pedido.platosPedido.getItems().map(platoPedido => {
     totalPlatos +=  platoPedido.plato.precio * platoPedido.cantidad
@@ -67,7 +61,7 @@ async function add(req:Request,res:Response) {
   try{
     const nroPed = Number.parseInt(req.params.nroPed)
     const pedido = await em.findOneOrFail(Pedido, {nroPed}, {populate: ['platosPedido.plato', 'bebidasPedido.bebida'], failHandler: () => {throw new PedidoNotFoundError}})
-    validarEntregaDeElementos(pedido) // Si bien considero que no es correcto, el pago no se podrá realizar hasta que todos los productos hayan sido entregados.
+    validarEntregaDeElementos(pedido)  
     const ped = await em.findOneOrFail(Pedido, {nroPed}, {failHandler: () => {throw new PedidoNotFoundError}})
     req.body.sanitizedInput.idPago = crypto.randomUUID()
     req.body.sanitizedInput.importe = calcularImporte(pedido)
@@ -83,23 +77,8 @@ async function add(req:Request,res:Response) {
   }
 }
 
-/* UN UPDATE DE UN PAGO ME PARECE INCORRECTO E INCLUSO PELIGROSO. NO DEBERÍA PERMITIRSE MODIFICAR UN PAGO.
-async function update (req:Request,res:Response){
-  try{
-    const id = Number.parseInt(req.params.id)
-    const cliente = await em.findOneOrFail(Usuario, {id})
-    const nroPed = Number.parseInt(req.params.nroPed)
-    const pedido = await em.findOneOrFail(Pedido, {nroPed, cliente})
-    const pago = await em.findOneOrFail(Pago, {pedido})
-    em.assign(pago, req.body.sanitizedInput)
-    await em.flush()
-    res.status(200).json({message: `Pago del pedido ${pedido.nroPed} del cliente ${cliente.nombre} ${cliente.apellido} actualizado con éxito`, data: pago})
-  } catch (error:any){
-    res.status(500).json({message:error.message})
-  }
-}*/
 
-//¿¿Tiene sentido eliminar un pago?? ¿¿Se utilizaría en casos donde hay un error durante la transacción??
+
 async function remove (req:Request,res:Response) {
     try {
     const nroPed = Number.parseInt(req.params.nroPed)
