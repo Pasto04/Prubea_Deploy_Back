@@ -76,7 +76,7 @@ function alreadyEnded(pedido: Pedido): void {
 }
 
 async function enoughIngredientes(plato: Plato, cantidad: number) {
-  // Validamos que haya stock de ingredientes para preparar el plato solicitado
+
   plato.elaboracionesPlato.getItems().forEach((elaboracion) => {
     if (elaboracion.ingrediente.stock < elaboracion.cantidadNecesaria * cantidad) {
       throw new PlatoPedidoNotEnoughIngredientsError()
@@ -85,7 +85,7 @@ async function enoughIngredientes(plato: Plato, cantidad: number) {
 }
 
 async function adjustIngredientes(plato: Plato, cantidad: number) {
-  // Ajustamos el stock de ingredientes luego de agregar un plato al pedido
+
   plato.elaboracionesPlato.getItems().forEach(async (elaboracion) => {
     const codigo = elaboracion.ingrediente.codigo;
     const ingre = await em.findOneOrFail(Ingrediente, { codigo }, { failHandler: () => {throw new IngredienteNotFoundError()} })
@@ -100,15 +100,15 @@ async function add(req: Request, res: Response) {
     const pedido = await em.findOneOrFail(Pedido, { nroPed }, { failHandler: () => {throw new PedidoNotFoundError()} });
     const numPlato = req.body.sanitizedInput.plato;
     const plato = await em.findOneOrFail(Plato, { numPlato }, { populate: ['elaboracionesPlato.ingrediente'], failHandler: () => {throw new PlatoNotFoundError()} })
-    alreadyEnded(pedido); //Validamos que el pedido al que queremos agregar el plato no haya finalizado.
+    alreadyEnded(pedido); 
     validarPlatoPedido(req.body.sanitizedInput)
 
     req.body.sanitizedInput.pedido = pedido
     req.body.sanitizedInput.plato = plato
 
-    enoughIngredientes(req.body.sanitizedInput.plato, req.body.sanitizedInput.cantidad) // Validamos que haya stock de ingredientes para preparar el plato solicitado
+    enoughIngredientes(req.body.sanitizedInput.plato, req.body.sanitizedInput.cantidad) 
 
-    adjustIngredientes(req.body.sanitizedInput.plato, req.body.sanitizedInput.cantidad) // Ajustamos el stock de los ingredientes.
+    adjustIngredientes(req.body.sanitizedInput.plato, req.body.sanitizedInput.cantidad) 
 
     const platoPedido = em.create(PlatoPedido, req.body.sanitizedInput)
     em.persist(platoPedido)
@@ -120,10 +120,7 @@ async function add(req: Request, res: Response) {
   }
 }
 
-/*NO TIENE SENTIDO ACTUALIZAR UN PLATO DE UN PEDIDO. SI EL CLIENTE DESEA ORDENAR NUEVAMENTE UN PLATO, SE CREARÁ Y QUEDARÁ 
-REGISTRADO CON UNA HORA (Y QUIZÁS UNA FECHA) DISTINTA DENTRO DEL MISMO PEDIDO.
-Este método únicamente permitirá a los usuarios (ya sea empleado o cliente) modificar el atributo "entregado" de PlatoPedido a "true".
-*/
+
 async function update(req: Request, res: Response) {
   try {
     const numPlato = Number.parseInt(req.params.nro)
@@ -137,7 +134,7 @@ async function update(req: Request, res: Response) {
     const fechaSolicitud = req.body.sanitizedInput.fechaSolicitud
     const horaSolicitud = req.body.sanitizedInput.horaSolicitud
     const platoPed = await em.findOneOrFail(PlatoPedido, { plato, pedido, fechaSolicitud, horaSolicitud }, { failHandler: () => { throw new PlatoPedidoNotFoundError() } })
-    isAlreadyDelivered(platoPed) //Validamos que el plato no haya sido entregado
+    isAlreadyDelivered(platoPed) 
     platoPed.establecerFechaYHoraEntrega()
     req.body.sanitizedInput.entregado = true
     req.body.sanitizedInput.cantidad = platoPed.cantidad
@@ -151,7 +148,6 @@ async function update(req: Request, res: Response) {
 }
 
 async function returnIngredientes(plato: Plato, cantidad: number) {
-  // Devolvemos el stock de ingredientes luego de eliminar un plato del pedido (no fue entregado, por lo que establecemos que no se consumieron los ingredientes)
   plato.elaboracionesPlato.getItems().forEach(async (elaboracion) => {
     const codigo = elaboracion.ingrediente.codigo
     const ingre = await em.findOneOrFail(Ingrediente, { codigo }, { failHandler: () => { throw new IngredienteNotFoundError() } })
@@ -171,9 +167,9 @@ async function remove(req: Request, res: Response) {
     const platoPed = await em.findOneOrFail(PlatoPedido, { plato, pedido, fechaSolicitud, horaSolicitud }, 
       { populate: ['plato.elaboracionesPlato.ingrediente'], failHandler: () => { throw new PlatoPedidoNotFoundError() } })
 
-    isAlreadyDelivered(platoPed) //Validamos que el plato no haya sido entregado
+    isAlreadyDelivered(platoPed)
 
-    returnIngredientes(platoPed.plato, platoPed.cantidad) // Devolvemos el stock de los ingredientes no utilizados.
+    returnIngredientes(platoPed.plato, platoPed.cantidad)
 
     await em.removeAndFlush(platoPed)
     res.status(200).json({message: `El plato [${platoPed.plato.descripcion}] ha sido eliminado del pedido`, data: platoPed})

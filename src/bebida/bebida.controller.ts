@@ -55,7 +55,7 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-// Todavía debemos sincronizar la creación de bebidas con la creación de "BebidaDeProveedor".
+
 async function add(req: Request, res: Response) {
   try {
     if ((await em.find(Proveedor, {})).length === 0) {
@@ -65,11 +65,11 @@ async function add(req: Request, res: Response) {
     } else {
       const bebidaValida = validarBebida(req.body.sanitizedInput)
       const bebida = em.create(Bebida, bebidaValida)
-      // creación de la relación entre bebida y proveedor
+
       const id = Number.parseInt(req.body.proveedor)
       const proveedor = await em.findOneOrFail(Proveedor, { id }, {failHandler: () => {throw new ProveedorNotFoundError()} })
       const bebidaDeProveedor = em.create(BebidaDeProveedor, { bebida, proveedor })
-      // creación de la relación entre bebida y proveedor
+
       await em.flush()
       res.status(201).json({ data: {            
         codBebida: bebida.codBebida,

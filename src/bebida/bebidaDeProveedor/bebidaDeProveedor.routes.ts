@@ -5,5 +5,5 @@ import { verificarToken } from "../../shared/authMiddleware.js"
 export const bebidaDeProveedorRouter = Router()
 
 bebidaDeProveedorRouter.get('/:codBebida/proveedores/:id', findOne)
-bebidaDeProveedorRouter.post('/:codBebida/proveedores', verificarToken, sanitizeBebidaDeProveedor, add) //Puede utilizarse para agregar un nuevo proveedor a una bebida existente.
+bebidaDeProveedorRouter.post('/:codBebida/proveedores', verificarToken, sanitizeBebidaDeProveedor, add)
 bebidaDeProveedorRouter.delete('/:codBebida/proveedores/:id', verificarToken, remove)

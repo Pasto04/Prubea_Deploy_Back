@@ -1,8 +1,8 @@
-import { app } from '../app'; // Importa tu app
+import { app } from '../app'; 
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-/**TEST UNITARIO*/
+
 function calcularTotalPedido(items: { nombre: string, precio: number, cantidad: number }[]): number {
     let total = 0;
     for (const item of items) {
@@ -36,7 +36,7 @@ describe('Tests Unitarios: Lógica de Negocio del Restaurante', () => {
         expect(calcularTotalPedido([])).toBe(0);
     });
 
-    // TEST INTEGRANTE 2
+
     it('Validación de Mesas: Debe aceptar estados válidos del sistema', () => {
         expect(esEstadoMesaValido('Disponible')).toBe(true);
         expect(esEstadoMesaValido('Ocupada')).toBe(true);
@@ -52,7 +52,7 @@ describe('Tests Unitarios: Lógica de Negocio del Restaurante', () => {
 
 
 
-/**TEST DE INTEGRACIÓN*/
+
 describe(' Requisito 2: Test de Integración', () => {
     it('Seguridad: GET /api/proveedores sin token debe rechazar la conexión (401)', async () => {
         const response = await request(app).get('/api/proveedores');

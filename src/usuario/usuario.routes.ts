@@ -5,7 +5,7 @@ import { verificarToken } from "../shared/authMiddleware.js"
 
 export const usuarioRouter = Router()
 
-usuarioRouter.get('/', verificarToken, findAllByTipoUsuario) //Sólo para empleados
+usuarioRouter.get('/', verificarToken, findAllByTipoUsuario)
 usuarioRouter.get('/:id', verificarToken, findOne) 
 usuarioRouter.post('/registro', sanitizeUsuario, addUsuario)
 usuarioRouter.post('/login', sanitizeLogIn, logInUsuario)

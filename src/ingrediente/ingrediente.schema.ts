@@ -3,8 +3,6 @@ import { ElaboracionPlato } from '../plato/elaboracionPlato/elaboracionPlato.ent
 import { IngredienteDeProveedor } from './ingredienteDeProveedor/ingredienteDeProveedor.entity.js'
 import { IngredienteUnidadMedidaTypeError } from '../shared/errors/entityErrors/ingrediente.errors.js'
 
-//Se puede resolver con z.string(z.enum(['kilogramos', 'gramos', 'litros', 'mililitros', 'unidades'])), 
-//pero se optó por hacerlo de esta manera para mostrar el uso de z.function()
 
 const unidadesMedida = ['kilogramos', 'gramos', 'litros', 'mililitros', 'unidades']
 
